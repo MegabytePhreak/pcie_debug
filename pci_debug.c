@@ -101,13 +101,15 @@ static void show_usage()
 	printf("\nUsage: pci_debug -s <device>\n"
 	       "  -h            Help (this message)\n"
 	       "  -s <device>   Slot/device (as per lspci)\n"
-	       "  -b <BAR>      Base address region (BAR) to access, eg. 0 for BAR0\n\n");
+	       "  -b <BAR>      Base address region (BAR) to access, eg. 0 for BAR0\n"
+	       "  -c <COMMAND>  Run a command without entering interactive mode\n\n");
 }
 
 int main(int argc, char *argv[])
 {
 	int opt;
 	char *slot = 0;
+	char *command = NULL;
 	int status;
 	struct stat statbuf;
 	device_t device;
@@ -116,7 +118,7 @@ int main(int argc, char *argv[])
 	/* Clear the structure fields */
 	memset(dev, 0, sizeof(device_t));
 
-	while ((opt = getopt(argc, argv, "b:hs:")) != -1) {
+	while ((opt = getopt(argc, argv, "b:hs:c:")) != -1) {
 		switch (opt) {
 		case 'b':
 			/* Defaults to BAR0 if not provided */
@@ -127,6 +129,9 @@ int main(int argc, char *argv[])
 			return -1;
 		case 's':
 			slot = optarg;
+			break;
+		case 'c':
+			command = optarg;
 			break;
 		default:
 			show_usage();
@@ -224,18 +229,23 @@ int main(int argc, char *argv[])
 	 * ------------------------------------------------------------
 	 */
 
-	printf("\n");
-	printf("PCI debug\n");
-	printf("---------\n\n");
-	printf(" - accessing BAR%d\n", dev->bar);
-	printf(" - region size is %d-bytes\n", dev->size);
-	printf(" - offset into region is %d-bytes\n", dev->offset);
-
-	/* Display help */
-	display_help(dev);
-
 	/* Process commands */
-	parse_command(dev);
+	if (command) {
+		process_command(dev, command);
+	} else {
+		printf("\n");
+		printf("PCI debug\n");
+		printf("---------\n\n");
+		printf(" - accessing BAR%d\n", dev->bar);
+		printf(" - region size is %d-bytes\n", dev->size);
+		printf(" - offset into region is %d-bytes\n", dev->offset);
+
+		/* Display help */
+		display_help(dev);
+
+		// No command given on commandline -> Enter interactive mode.
+		parse_command(dev);
+	}
 
 	/* Cleanly shutdown */
 	munmap(dev->maddr, dev->size);

@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 	/* Clear the structure fields */
 	memset(dev, 0, sizeof(device_t));
 
-	while ((opt = getopt(argc, argv, "b:hs:")) != -1) {
+	while ((opt = getopt(argc, argv, "b:hs:c:")) != -1) {
 		switch (opt) {
 		case 'b':
 			/* Defaults to BAR0 if not provided */

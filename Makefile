@@ -1,4 +1,4 @@
-LDFLAGS += -lreadline
+LDLIBS += -lreadline
 default: pci_debug
 pci_debug: pci_debug.c
 
